@@ -1,0 +1,280 @@
+Started on [2021-07-03 Sat] 
+
+I need three functions and some syntax I don't know yet, let's do some file IO
+
+* Starting
+ #+name:c-test
+#+begin_src C :results output
+printf ("Hello World!!\n");
+#+end_src 
+
+#+RESULTS:
+: Hello World!!
+
+#+name:basic-io
+#+begin_src C :results output
+#include <stdio.h>
+#include <stdlib.h>
+
+
+
+int main()
+{
+   char ch, file_name[25];
+   FILE *fp;
+
+   fp = fopen("FoxDog.txt", "r");
+
+   if (fp == NULL)
+   {
+      perror("Error while opening the file.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   printf("The contents of %s file are:\n", file_name);
+
+   while((ch = fgetc(fp)) != EOF)
+      printf("%c", ch);
+
+   fclose(fp);
+   return 0;
+}
+#+end_src 
+
+#+RESULTS: basic-io
+: The contents of  file are:
+: The quick fox jumps over the lazy brown dog
+
+
+Oh... it's just one line. Okay. Well that simplifies things a bit. I just need a single vector that has the string split by white space.
+
+https://overiq.com/c-programming-101/array-of-strings-in-c/
+
+Oh joy, it appears to make a vector, I need to define the maximum length first. That means I either hard code the length and manually think of how long it need to be, or I need a function that can look at the file and determine the maximum length I am going to need to before I initialize the vector. 
+
+I can imagine a for loop going through all the white space delineated words and simply updating a function local variable with the highest number. But feels like if I am going to find all these words once, I might as well be adding them to a vector. 
+
+#+begin_quote
+ 1  char ch_arr[3][10] = {  
+ 2                           {'s', 'p', 'i', 'k', 'e', '\0'},  
+ 3                           {'t', 'o', 'm','\0'},  
+ 4                           {'j', 'e', 'r', 'r', 'y','\0'}  
+ 5                       };  
+
+It is important to end each 1-D thing by the null character, otherwise, it will be just an thing of characters.
+We can't use them as strings. 
+
+Declaring an thing of strings this way is rather tedious, that's why C provides an alternative syntax to
+achieve the same thing. This above initialization is equivalent to:
+
+ 1  char ch_arr[3][10] = {  
+ 2                           "spike",  
+ 3                           "tom",  
+ 4                           "jerry"  
+ 5                       };  
+#+end_quote
+
+
+https://www.programiz.com/c-programming/c-arrays
+Not quite what I was looking for but some of the syntax I  need is here
+
+...you know what, I will make that a question to ask later. Let's just eye ball it for now.
+
+
+
+
+#+name:vector-test
+#+begin_src C :results output
+char ch_arr[3][5] = {
+  {'B', 'o', 'b','\0'},
+  {'A', 'n', 'n','\0'},
+  {'B', 'e', 'n','\0'},
+ }; 
+for (int i = 0; i < 3; i += 1){
+  printf (ch_arr[i]);
+  printf (" ");
+  }; 
+#+end_src 
+
+#+RESULTS: vector-test
+: Bob Ann Ben 
+
+It's kind of hacky to get the spaces in there, but it works. Anyway, that is how I will be getting the words out of a vector to write into a file.
+
+Look like 
+* Step two
+  Looks like I have the basic pieces assembled. I still need writing to a file but that should be a simple search to get the syntax. What I want to try first is get as far as pulling the text from the file, putting it in a vector, and printing reversed strings to the console.
+
+#+name:not-so-basic-io
+#+begin_src C :results output
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+int main()
+{
+  FILE *fp;
+  long lSize;
+  char *buffer;
+
+  fp = fopen ( "FoxDog.txt" , "r" );
+  if( !fp ) perror("FoxDog.txt"),exit(1);
+
+  fseek( fp , 0L , SEEK_END);
+  lSize = ftell( fp );
+  rewind( fp );
+
+  buffer = calloc( 1, lSize+1 );
+  if( !buffer ) fclose(fp),fputs("memory alloc fails",stderr),exit(1);
+
+  if( 1!=fread( buffer , lSize, 1 , fp) )
+    fclose(fp),free(buffer),fputs("entire read fails",stderr),exit(1);
+
+/* do your work here, buffer is a string contains the whole text */
+   const char delim[2] = " ";
+   char *element = strtok(buffer, delim);
+   char *normalWords[10];
+   int i = 0; 
+      
+   while( element != NULL ) {
+     normalWords[i++] = element;
+     element = strtok(NULL, delim);
+   }
+/* At this point, all the words of the file are in normalWords. Need to write reversed versions to the file I am about to defie below */
+
+   char result[9][20];
+   for(int i = 0; i < 9; i++){
+     int j = 0;
+     int k = 0;
+     int theIndex = 0;
+     while (normalWords[i][k] != '\0'){
+       j++;
+       k++;
+     };
+     /* hacky way of getting the legnth of this element into j */
+     k = 0;
+     
+     while (normalWords[i][k] != '\0'){
+       theIndex = (j - k) -1;
+       result[i][k] = normalWords[i][theIndex];
+       k++;
+     };
+     result[i][k] = '\0';
+   };
+/* wish this could have been cleaner */
+   
+   FILE *out;
+   out = fopen("Reversed.txt", "w");
+  
+   if(out == NULL) {
+     printf("file can't be opened\n");
+     exit(1);
+   }
+
+for(int m = 0; m < 9; m++){
+  fprintf(out,"%s",result[m]);
+  fprintf(out," ");
+  }
+   
+   fclose(out);
+   fclose(fp);
+   free(buffer);
+
+   return 0;
+}
+#+end_src 
+
+#+RESULTS: not-so-basic-io
+
+So close. I not have the whole thing done, I just don't have a way to reverse each element. 
+
+...I could write a function for it?
+
+
+#+begin_src C :results output
+
+#include <string.h>
+
+char* reverseMe(char c[]){
+  char* result[3];
+  int length = sizeof(c)/sizeof(c[0]);
+  for (int i = 0; i < length; i++){
+    int target = length - i;
+    result[target] = c[i];
+  } 
+  return result;
+}
+
+
+int main(){
+  char myString[] = "yo";
+  printf(reverseMe(myString));
+  return 0;
+}
+#+end_src 
+
+#+RESULTS:
+
+* step 2.5
+  Okay, I just need to get this array revsered... er get a funcitn that can go through an array of strings and reverse all of them. Let's break that out into it's own block
+
+  
+ #+name:revArrray
+#+begin_src C :results output
+
+/* char reverseIt(char c[3][10]){ */
+  /* char result[3][10]; */
+  /*   for(int i = 0; i < 3; i++){ */
+  /*     int j = 0;   */
+  /*     int k = 0; */
+  /*     int theIndex = 0; */
+  /*     while (c[i][k] != '\0'){ */
+  /*       j++; */
+  /*       k++; */
+  /*     } */
+  /*    /\* hacky way of getting the legnth of this element into j *\/ */
+  /*    k = 0; */
+             
+  /*    while (c[i][k] != '\0'){ */
+  /*      theIndex = (j - k) -1; */
+  /*      result[i][k] = c[i][theIndex]; */
+  /*        k++; */
+  /*        } */
+  /*    result[i][k] = '\0'; */
+  /*   } */
+  /*    return result; */
+/* } */
+char myArray[3][10] = {  
+  {'s', 'p', 'i', 'k', 'e', '\0'},  
+  {'t', 'o', 'm','\0'},  
+  {'j', 'e', 'r', 'r', 'y','\0'}  
+};
+
+char result[3][10];
+for(int i = 0; i < 3; i++){
+  int j = 0;  
+  int k = 0;
+  int theIndex = 0;
+  while (myArray[i][k] != '\0'){
+    j++;
+    k++;
+  };
+  /* hacky way of getting the legnth of this element into j */
+  k = 0;
+  
+  while (myArray[i][k] != '\0'){
+    theIndex = (j - k) -1;
+    result[i][k] = myArray[i][theIndex];
+    k++;
+  };
+  result[i][k] = '\0';
+ };
+
+printf(result[1]);
+#+end_src 
+
+#+RESULTS: revArrray
+: mot
+
+wow it worked.
