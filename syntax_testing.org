@@ -278,3 +278,96 @@ printf(result[1]);
 : mot
 
 wow it worked.
+* Homework round 2
+** Task list
+   
+      - [X] 1)
+      Change the main function to the following:
+      
+      - [ ] 2)
+      A.
+      Use an argument for the name of the input file
+        The current exe would be run as "./final"
+        New exe would be run as "./final FoxDog.txt"
+      
+      B.
+      Use an argument for the name of the output file
+        New exe would be run as "./final FoxDog.txt TestReverse.txt"
+        
+      - [ ] 3)
+      A. Use a double pointer to store the words (strings):
+      E.G. char **stringArray
+      B. Do not use fseek SEEK_END to get the file length.
+      C. Do not calloc one large buffer to read the whole file.
+      D. Use a malloc per each word
+      E. Do the word reversing in a function call.
+      
+      - [ ] 4)
+      Create a new function called ReverseTextNoBuf(FILE*,FILE*)
+      Have this function perform the original task with only a single character buffer
+      no calloc
+      no char *buffer
+      (I did this myself to make sure it was actually possible)
+      
+      You can just call ReverseTextNoBuf instead of ReverseText (keep the original code).
+      Maybe use a different output file name:
+      "./final FoxDog.txt TextReverseNoBuf.txt"
+      
+      - [ ] 5)
+      Handle the attached file: "./final FoxDog2.txt TextReverseNoBuf.txt"
+      
+      - [ ] 6)
+      Rename "final", but dont just rename the file, set the output file in the gcc command line when you compile
+  #+name:NewMain
+  #+begin_src C :results output
+int ReverseText(FILE *FileIn, FILE *FileOut)
+  {
+
+    return 0;
+      }
+
+
+      int main(void)
+      {
+      
+          FILE *in, *out;
+      
+      
+          in = fopen("FoxDog.txt" , "r");
+      
+          if ( !in ) {
+      
+              perror("FoxDog.txt");
+      
+              exit(1);
+      
+          }
+      
+      
+          out = fopen("TextReverse.txt", "w");
+      
+          if (out == NULL) {
+      
+              fclose(in);
+      
+              printf("file can't be opened\n");
+      
+              exit(1);
+      
+          }
+      
+      
+          ReverseText(in, out);
+      
+      
+          fclose(out);
+      
+          fclose(in);
+      
+      
+          return 0;
+      
+      }
+  #+end_src
+ 
+Okay, so 
