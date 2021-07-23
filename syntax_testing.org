@@ -424,3 +424,32 @@ int main(void)
   #+end_src
  
 Okay, so 
+
+** Python feels like cheating now
+  #+name:the_python_way
+  #+begin_src python :python python3 :results output
+import os.path
+
+
+if __name__ == '__main__':
+    filename = "FoxDog.txt"
+    if not os.path.isfile(filename):
+        # testing if the files exists
+        print('File does not exist')
+    else:
+        with open(filename) as f:
+            content = f.read()
+            word_list = content.split(' ')
+            # text is now split by spaces and ready to be written in reverse
+            e = open("python_rev_text.txt",'w')
+            e.close()
+            # blanking the file if it exists first
+            ex = open("python_rev_text.txt",'a')
+            for word in word_list:
+                ex.write(word[::-1])
+                ex.write(' ')
+            ex.close()
+            f.close()
+  #+end_src 
+
+  That was such an easy way to do what has been taking me weeks to figure out in C. Once I get this under my fingers it will be nice to have in the tool belt, but to think this is all I have to do in Python is pretty crazy.
