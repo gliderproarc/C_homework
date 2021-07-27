@@ -3,74 +3,101 @@
 #include <string.h>
 
 
-int main()
+char* revThisString(char *string)
 {
-  FILE *fp;
-  long lSize;
-  char *buffer;
+  /* To this is my function to reverse a word,
+     which I will call once per word in the buffer */
+  /* const int* myLength = sizeof(string) / sizeof(string[0]); */
 
-  fp = fopen ( "FoxDog.txt" , "r" );
-  if( !fp ) perror("FoxDog.txt"),exit(1);
+  static char reversed[10];
+  /* This hard coded 5 needs to be fixed */
 
-  fseek( fp , 0L , SEEK_END);
-  lSize = ftell( fp );
-  rewind( fp );
+  int j = 0;
+
+  /* Ths 5 below is hard coded and needs to be fixed */
+  for(int i = 10; i > -1;)
+    {
+      reversed[j] = string[i];
+      i = i - 1;
+      j = j + 1;
+    }
+  return reversed;
+}
+
+int ReverseText(FILE *FileIn, FILE *FileOut)
+{
+  int lSize;
+  char* buffer;
+
+  fseek( FileIn , 0L , SEEK_END);
+  lSize = ftell( FileIn);
+  rewind( FileIn );
+  /* Getting the size of the text I am working with */
 
   buffer = calloc( 1, lSize+1 );
-  if( !buffer ) fclose(fp),fputs("memory alloc fails",stderr),exit(1);
+  if( !buffer ) fclose(FileIn),fputs("memory alloc fails",stderr),exit(1);
 
-  if( 1!=fread( buffer , lSize, 1 , fp) )
-    fclose(fp),free(buffer),fputs("entire read fails",stderr),exit(1);
+  if( 1!=fread( buffer , lSize, 1 , FileIn) )
+    fclose(FileIn),free(buffer),fputs("entire read fails",stderr),exit(1);
 
-/* do your work here, buffer is a string contains the whole text */
+  /* This makes an array called buffer for holding all the chars */
+
    const char delim[2] = " ";
    char *element = strtok(buffer, delim);
    char *normalWords[10];
-   int i = 0; 
-      
+   int i = 0;
+
    while( element != NULL ) {
      normalWords[i++] = element;
      element = strtok(NULL, delim);
    }
-/* At this point, all the words of the file are in normalWords. Need to write reversed versions to the file I am about to defie below */
-
-   char result[9][20];
-   for(int i = 0; i < 9; i++){
-     int j = 0;
-     int k = 0;
-     int theIndex = 0;
-     while (normalWords[i][k] != '\0'){
-       j++;
-       k++;
-     };
-     /* hacky way of getting the legnth of this element into j */
-     k = 0;
-     
-     while (normalWords[i][k] != '\0'){
-       theIndex = (j - k) -1;
-       result[i][k] = normalWords[i][theIndex];
-       k++;
-     };
-     result[i][k] = '\0';
-   };
-/* wish this could have been cleaner */
-   
-   FILE *out;
-   out = fopen("Reversed.txt", "w");
-  
-   if(out == NULL) {
-     printf("file can't be opened\n");
-     exit(1);
-   }
+   /* This splits all the "words" into an array called normalWords */
+   /*   so they can be reversed by calling reversr on them */
 
 for(int m = 0; m < 9; m++){
-  fprintf(out,"%s",result[m]);
-  fprintf(out," ");
+  fprintf(FileOut,"%s",revThisString(normalWords[m]));
+  fprintf(FileOut," ");
   }
-   
-   fclose(out);
-   fclose(fp);
-   free(buffer);
+/* writting the words to the file    */
 
-   return 0;
+ free(buffer);
+
+  return 0;
+}
+
+int main(void)
+{
+
+  FILE *in, *out;
+
+  in = fopen("FoxDog.txt" , "r");
+
+  if ( !in ) {
+
+    perror("FoxDog.txt");
+
+    exit(1);
+
+  }
+
+  out = fopen("TextReverse.txt", "w");
+
+  if (out == NULL) {
+
+    fclose(in);
+
+    printf("file can't be opened\n");
+
+    exit(1);
+
+  }
+
+  ReverseText(in, out);
+
+  fclose(out);
+
+  fclose(in);
+
+  return 0;
+
 }
