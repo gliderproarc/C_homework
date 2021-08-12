@@ -542,3 +542,176 @@ if __name__ == '__main__':
 ** Getting closer
    Okay, it's [2021-07-27 Tue] and I have a lot of it working. I just need a way to get the size of the array in the functions right to the words come out in the file correctly.
 
+
+** How about just reading words?
+  [2021-08-07 Sat] 
+  It's onto week two and I think I need to break the problem down a little more. One of the homework requirements is to read in one word at a time. I realized I don't know how to do that. Let's figure it out.
+
+ 
+#+name:readWords
+#+begin_src C :results output
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+   char ch;
+   FILE *fp;
+
+   fp = fopen("FoxDog.txt", "r");
+
+   if (fp == NULL)
+   {
+      perror("Error while opening the file.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   printf("The contents of the file are:\n");
+
+   while((ch = fgetc(fp)) != EOF)
+      printf("%c", ch);
+
+   fclose(fp);
+   return 0;
+}
+#+end_src
+
+#+RESULTS: readWords
+: The contents of the file are:
+: The quick fox jumps over the lazy brown dog
+
+okay, so this is a way to get characters out of the file one by one. Ideally, I read in characters into a small buffer one at a time, then write them to the file when I know the word is done.
+
+...but getting characters one at a time sounds like a great way to have data and no where to put it. Don't I need a memory buffer to put something before I go grabbing it from the file?
+
+Let's use this and make it read just one word. How do I get it to stop what what is either the end of a word or the end of the file?
+
+
+#+name:readOneWord
+#+begin_src C :results output
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+   char ch;
+   FILE *fp;
+   char* word;
+
+   fp = fopen("FoxDog.txt", "r");
+
+   if (fp == NULL)
+   {
+      perror("Error while opening the file.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   printf("One word in the file is:\n");
+   
+   for(int i = 0; i < 4;){
+     ch = fgetc(fp);
+     printf("%c", ch);
+     i++;
+  }
+   
+   fclose(fp);
+   return 0;
+}
+#+end_src
+
+#+RESULTS: readOneWord
+: One word in the file is:
+: The 
+
+Interesting, I can't tell it to read from another part of the file by just moving "i" because the call to fgetc is not using i to determine where it reads from. hmn. what is Fgetc anyway?
+
+Hmn... I was thinking maybe I could try to read in words at a time by telling a char pointer that the start of the file was a string, but it looks like I can't treat a file pointer like its a string.
+
+** Let's try a function that just prints the word?
+
+   
+#+name:printOneWord
+#+begin_src C :results output
+#include <stdio.h>
+#include <stdlib.h>
+
+void print_next_word(FILE *filePointer, FILE *outPointer){
+  char word[10];
+  char stopper = 'a';
+  int i = 0;
+  int length = 0;
+  while(stopper != ' ')
+    {
+      word[i] = fgetc(filePointer);
+      stopper = word[i];
+      if( feof(filePointer) ) {
+        word[i] = ' ';
+        i++;
+        break;
+      }
+      i++;
+    }
+  length = i;
+  int j = 0;
+  i = i - 1;
+  for(j = 0; j < length;)
+    {
+      fprintf(outPointer,"%c",word[i]);
+      j++;
+      i = i-1;
+      }
+}
+  
+int main()
+{
+   char ch;
+   FILE *fp;
+
+   fp = fopen("FoxDog.txt", "r");
+   out = fopen("testReverse.txt","w"); 
+   
+
+   if (fp == NULL)
+   {
+      perror("Error while opening the file.\n");
+      exit(EXIT_FAILURE);
+   }
+
+   int breakme = 0;
+   while(breakme == 0)
+     {
+      print_next_word(fp, out);
+      if(feof(fp))
+        {
+        breakme = 1;
+        break;
+        }
+     }
+   
+   fclose(fp); 
+   fclose(out);
+   return 0;
+}
+#+end_src
+
+#+RESULTS: printOneWord
+: ehT kciuq xof spmuj revo eht yzal nworb god
+
+Okay, I just need to wire up the out file, and I thin this is done. 
+** Okay, psudo-code time
+
+   I am REALLY close. That last run has a function that scopes a little 10 size array for holidng a word and prints it to the console each time the functon is aclled (advancing the pointer as it goes. So I just need to the following:
+
+   1. Define a function that takes a file pointer
+      1. make a local array
+      2. make a counter int
+      3. start a while loop
+      4. call fgetc on the file pointer
+      5. if the chacter at the current indes is a space, break
+      6. if fgetc hits the end of the file, break
+      7. use the fprintf function to write a word to the file by walking the local array backwards starting at the value the while loop just finished advancing us to
+      8. if the end of the file has been reached, return a 
+   2. Define a main function
+      1. Set up a file pointer that looks at the text file
+      2. start another while loop
+      3. as along as the file pointer hasn't hit the EOF, keep calling the function to write words to the file one at a time.
