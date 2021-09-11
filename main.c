@@ -26,29 +26,37 @@ void print_next_word(FILE *filePointer, FILE *outPointer) {
   }
 }
 
-int main() {
-  char ch;
-  FILE *fp;
-  FILE *out;
+int main(int argc, char *argv[])
+{
+  FILE *in, *out;
 
-  fp = fopen("FoxDog.txt", "r");
-  out = fopen("TextReverse.txt", "w");
+  /* printf("P name %s\n", argv[0]); */
+  /* printf("p1 is %s\n", argv[1]); */
+  /* printf("p2 is %s\n", argv[2]); */
 
-  if (fp == NULL) {
-    perror("Error while opening the file.\n");
-    exit(EXIT_FAILURE);
+  in = fopen(argv[1], "r");
+  out = fopen(argv[2], "w");
+
+  if (in == NULL) {
+    printf("file can't be opened.\n");
+    exit(1);
+  }
+
+  if (out == NULL) {
+    printf("file can't be opened.\n");
+    exit(1);
   }
 
   int breakme = 0;
   while (breakme == 0) {
-    print_next_word(fp, out);
-    if (feof(fp)) {
+    print_next_word(in, out);
+    if (feof(in)) {
       breakme = 1;
       break;
     }
   }
 
-  fclose(fp);
+  fclose(in);
   fclose(out);
   return 0;
 }

@@ -542,7 +542,7 @@ if __name__ == '__main__':
 ** Getting closer
    Okay, it's [2021-07-27 Tue] and I have a lot of it working. I just need a way to get the size of the array in the functions right to the words come out in the file correctly.
 
-
+   
 ** How about just reading words?
   [2021-08-07 Sat] 
   It's onto week two and I think I need to break the problem down a little more. One of the homework requirements is to read in one word at a time. I realized I don't know how to do that. Let's figure it out.
@@ -662,13 +662,14 @@ void print_next_word(FILE *filePointer, FILE *outPointer){
       }
 }
   
-int main()
+int main( int argc, char *argv[] )
 {
+  
    char ch;
    FILE *fp;
 
-   fp = fopen("FoxDog.txt", "r");
-   out = fopen("testReverse.txt","w"); 
+   fp = fopen(argv[0], "r");
+   out = fopen(argv[1],"w"); 
    
 
    if (fp == NULL)
